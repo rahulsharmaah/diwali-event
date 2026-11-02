@@ -522,3 +522,9 @@ input:focus, select:focus {
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .reveal { opacity: 1; transform: none; }
 }
+
+/* Payment screen while the booking is still saving */
+.pending .apps { opacity: 0.45; pointer-events: none; }
+.pending .apps-title::after { content: " · preparing…"; color: var(--fire-hi); }
+.pending #claimForm, .pending .qr-box, .pending .upi-id { opacity: 0.45; pointer-events: none; }
+.apps, #claimForm, .qr-box, .upi-id { transition: opacity 0.25s ease; }

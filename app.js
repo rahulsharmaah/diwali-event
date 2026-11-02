@@ -153,29 +153,48 @@ function showView(which) {
   $("formCard").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+// QR library is only needed on the payment screen, so load it on demand.
+let qrLib;
+function loadQr() {
+  qrLib ||= new Promise((resolve, reject) => {
+    const el = document.createElement("script");
+    el.src = "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js";
+    el.onload = () => resolve(window.qrcode);
+    el.onerror = reject;
+    document.head.appendChild(el);
+  });
+  return qrLib;
+}
+
+// reg.pending: the booking is still being saved. Show the amount right away and
+// enable the pay buttons once the server returns the registration ID.
 function showPay(reg) {
-  const link = upiLink(reg);
-  document.querySelectorAll(".js-regid").forEach((el) => (el.textContent = reg.id));
+  const link = reg.pending ? "#" : upiLink(reg);
+  const card = $("payView");
+  card.classList.toggle("pending", Boolean(reg.pending));
+  document.querySelectorAll(".js-regid").forEach((el) => (el.textContent = reg.pending ? "…" : reg.id));
   $("payHello").textContent = `Almost there, ${reg.name.split(" ")[0]}!`;
   $("payAmt").textContent = inr(reg.total);
   $("payFor").textContent = reg.line || `${reg.count} ${reg.count === 1 ? "person" : "people"}`;
   $("appHint").hidden = true;
   $("upiId").textContent = UPI_ID;
   $("upiApps").innerHTML =
-    UPI_APPS.map((a) => `<a class="app" href="${appLink(a, reg)}"><img src="${a.icon}" alt="" width="24" height="24" />${a.name}</a>`).join("") +
+    UPI_APPS.map((a) => `<a class="app" href="${reg.pending ? "#" : appLink(a, reg)}"><img src="${a.icon}" alt="" width="24" height="24" />${a.name}</a>`).join("") +
     `<a class="app other" href="${link}">${UPI_ICON}${isAndroid ? "Any UPI app" : "Other UPI app"}</a>`;
   // Phones pay from the app buttons; other screens get the QR straight away.
   $("qrDetails").open = !isPhone();
 
   const box = $("qr");
   box.innerHTML = "";
-  if (window.qrcode) {
-    const qr = window.qrcode(0, "M");
-    qr.addData(link);
-    qr.make();
-    box.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0 });
+  if (!reg.pending) {
+    loadQr().then((qrcode) => {
+      const qr = qrcode(0, "M");
+      qr.addData(link);
+      qr.make();
+      box.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0 });
+    }).catch(() => {});
   }
-  showView("pay");
+  if ($("payView").hidden) showView("pay");
 }
 
 function showDone(reg) {
@@ -185,7 +204,12 @@ function showDone(reg) {
   showView("done");
 }
 
-$("upiApps").addEventListener("click", (e) => { if (e.target.closest("a")) watchAppOpen(); });
+$("upiApps").addEventListener("click", (e) => {
+  const a = e.target.closest("a");
+  if (!a) return;
+  if ($("payView").classList.contains("pending")) return e.preventDefault();
+  watchAppOpen();
+});
 
 $("copyUpi").addEventListener("click", async () => {
   try {
@@ -216,6 +240,9 @@ form.addEventListener("submit", async (e) => {
 
   btn.disabled = true;
   btn.textContent = "Booking…";
+  const list = [{ food: data.food, drinks: data.drinks }, ...data.guests];
+  const line = priceLine(list);
+  showPay({ pending: true, name: data.name, count: list.length, total: summarize(list).total, line });
   try {
     const res = await fetch("/api/register", {
       method: "POST",
@@ -225,7 +252,7 @@ form.addEventListener("submit", async (e) => {
     const out = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(out.error || "Something went wrong. Please try again.");
 
-    const reg = { ...out, line: priceLine([{ food: data.food, drinks: data.drinks }, ...data.guests]), status: "unpaid" };
+    const reg = { ...out, line, status: "unpaid" };
     remember(reg);
     showPay(reg);
     // Android: jump straight into the system chooser listing every UPI app.
@@ -235,12 +262,20 @@ form.addEventListener("submit", async (e) => {
       window.location.href = upiLink(reg);
     }
   } catch (err) {
+    $("payView").classList.remove("pending");
+    showView("form");
     showError(errEl, err.message);
   } finally {
     btn.disabled = false;
     btn.textContent = BOOK_LABEL();
   }
 });
+
+// Wake the booking server while the guest is filling the form, so the real
+// submit doesn't pay for a cold start.
+const warm = () => fetch("/api/register", { method: "GET", keepalive: true }).catch(() => {});
+if ("requestIdleCallback" in window) requestIdleCallback(warm, { timeout: 3000 });
+else setTimeout(warm, 1500);
 
 $("claimForm").addEventListener("submit", async (e) => {
   e.preventDefault();

@@ -14,6 +14,8 @@ function makeId() {
 }
 
 export default async function handler(req, res) {
+  // GET is a warm-up ping from the page so the first real booking is fast.
+  if (req.method === "GET") return res.status(204).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const b = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};

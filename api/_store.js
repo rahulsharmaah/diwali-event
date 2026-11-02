@@ -55,14 +55,31 @@ if (!usingRedis && process.env.VERCEL) {
   console.error("No Redis configured: connect a Redis database in Vercel Storage.");
 }
 
+// Each operation runs as one Lua script, so it costs a single round trip to
+// the database (and the add is atomic).
+const ADD_LUA = `
+if redis.call('SET', KEYS[1], ARGV[1], 'NX') then
+  redis.call('SET', KEYS[2], ARGV[2])
+  redis.call('SADD', KEYS[3], ARGV[2])
+  return 1
+end
+return 0`;
+const GET_BY_ID_LUA = `
+local email = redis.call('GET', KEYS[1])
+if not email then return false end
+return redis.call('GET', 'reg:' .. email)`;
+const LIST_LUA = `
+local emails = redis.call('SMEMBERS', KEYS[1])
+if #emails == 0 then return {} end
+local keys = {}
+for i, e in ipairs(emails) do keys[i] = 'reg:' .. e end
+return redis.call('MGET', unpack(keys))`;
+
 // Returns true if saved, false if this email already exists.
 export async function addRegistration(rec) {
   if (usingRedis) {
-    const ok = await redis("SET", `reg:${rec.email}`, JSON.stringify(rec), "NX");
-    if (ok !== "OK") return false;
-    await redis("SET", `regid:${rec.id}`, rec.email);
-    await redis("SADD", "reg:emails", rec.email);
-    return true;
+    const ok = await redis("EVAL", ADD_LUA, 3, `reg:${rec.email}`, `regid:${rec.id}`, "reg:emails", JSON.stringify(rec), rec.email);
+    return Number(ok) === 1;
   }
   if (process.env.VERCEL) throw new Error("Database is not configured.");
   const all = await readLocal();
@@ -74,9 +91,7 @@ export async function addRegistration(rec) {
 
 export async function getById(id) {
   if (usingRedis) {
-    const email = await redis("GET", `regid:${id}`);
-    if (!email) return null;
-    const raw = await redis("GET", `reg:${email}`);
+    const raw = await redis("EVAL", GET_BY_ID_LUA, 1, `regid:${id}`);
     return raw ? JSON.parse(raw) : null;
   }
   return Object.values(await readLocal()).find((r) => r.id === id) || null;
@@ -100,9 +115,7 @@ export async function ping() {
 
 export async function listRegistrations() {
   if (usingRedis) {
-    const emails = await redis("SMEMBERS", "reg:emails");
-    if (!emails.length) return [];
-    const rows = await redis("MGET", ...emails.map((e) => `reg:${e}`));
+    const rows = (await redis("EVAL", LIST_LUA, 1, "reg:emails")) || [];
     return rows.filter(Boolean).map((r) => JSON.parse(r));
   }
   return Object.values(await readLocal());
