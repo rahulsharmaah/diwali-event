@@ -147,7 +147,7 @@ function showPay(reg) {
 function showDone(reg) {
   document.querySelectorAll(".js-regid").forEach((el) => (el.textContent = reg.id));
   $("doneText").textContent =
-    `${reg.name}, your clan of ${reg.count} is booked. We have your payment of ${inr(reg.total)} and will confirm it shortly.`;
+    `${reg.name}, your group of ${reg.count} is booked. We have your payment of ${inr(reg.total)} and will confirm it shortly.`;
   showView("done");
 }
 

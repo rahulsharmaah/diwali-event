@@ -3,35 +3,52 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-  <title>Diwali of the Ancients — Register</title>
-  <meta name="description" content="Register for our Diwali celebration. ₹250 per person." />
-  <meta name="theme-color" content="#140b07" />
+  <title>Deepotsav — Diwali Registration</title>
+  <meta name="description" content="Celebrate Shri Ram's homecoming with us this Diwali. ₹250 per person." />
+  <meta name="theme-color" content="#12060a" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Mukta:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="preload" as="image" href="/img/ram-720.webp" type="image/webp" fetchpriority="high" />
   <link rel="stylesheet" href="/style.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪔</text></svg>" />
-  <script type="importmap">
-    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
-  </script>
 </head>
 <body>
-  <canvas id="scene" aria-hidden="true"></canvas>
-  <div class="vignette" aria-hidden="true"></div>
+  <canvas id="sparks" aria-hidden="true"></canvas>
+
+  <header class="hero" id="hero">
+    <picture class="hero-img" id="heroImg">
+      <source type="image/webp" srcset="/img/ram-720.webp 720w, /img/ram-1200.webp 1200w" sizes="(min-width: 900px) 50vw, 100vw" />
+      <img src="/img/ram-720.jpg" alt="Shri Ram Lalla murti of Ayodhya adorned with marigold garlands" fetchpriority="high" />
+    </picture>
+    <div class="hero-shade" aria-hidden="true"></div>
+
+    <div class="hero-copy">
+      <p class="om">॥ जय श्री राम ॥</p>
+      <h1>Deepotsav</h1>
+      <p class="tagline">Diwali Celebration 2026</p>
+      <p class="sub">Celebrate Shri Ram's homecoming with diyas, music and a festive feast.</p>
+      <ul class="chips">
+        <li>₹250 / person</li>
+        <li>Veg &amp; non-veg</li>
+        <li>Ethnic dress</li>
+      </ul>
+      <a class="primary cta" href="#formCard">Register now</a>
+    </div>
+    <a class="scroll-hint" href="#formCard" aria-label="Scroll to registration"><span></span></a>
+  </header>
 
   <main class="wrap">
-    <header class="hero">
-      <p class="eyebrow">The tribe gathers around the fire</p>
-      <h1>Diwali <span>of the</span> Ancients</h1>
-      <p class="sub">Light a diya, dress in your finest, feast with the clan.<br />Entry <strong>₹250</strong> per person.</p>
-    </header>
+    <section class="card reveal" id="formCard">
+      <div class="toran" aria-hidden="true"></div>
 
-    <section class="tablet" id="formCard">
       <form id="regForm" novalidate>
         <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <p class="step">Step 1 of 2</p>
+        <h2 class="card-title">Book your place</h2>
 
         <fieldset>
-          <legend>Chief of the clan</legend>
+          <legend>Your details</legend>
           <div class="grid">
             <label class="field span2">
               <span>Full name</span>
@@ -60,9 +77,9 @@
         </fieldset>
 
         <fieldset>
-          <legend>The clan</legend>
+          <legend>Who's coming</legend>
           <div class="row-between">
-            <span class="label">How many people in total?</span>
+            <span class="label">People in total (including you)</span>
             <div class="stepper" role="group" aria-label="Number of people">
               <button type="button" data-step="-1" aria-label="Fewer">−</button>
               <output id="countOut">1</output>
@@ -73,16 +90,16 @@
         </fieldset>
 
         <fieldset>
-          <legend>Ethnic wear</legend>
+          <legend>Coming in ethnic wear?</legend>
           <div class="choice">
-            <label><input type="radio" name="ethnic" value="yes" checked /><span>Yes, dressed up</span></label>
+            <label><input type="radio" name="ethnic" value="yes" checked /><span>Yes, of course</span></label>
             <label><input type="radio" name="ethnic" value="no" /><span>Not this time</span></label>
           </div>
         </fieldset>
 
         <div class="total">
           <div>
-            <span class="label">Entry total</span>
+            <span class="label">Total</span>
             <small id="totalCalc">1 × ₹250</small>
           </div>
           <strong id="totalAmt">₹250</strong>
@@ -90,12 +107,12 @@
 
         <p class="error" id="formError" role="alert" hidden></p>
         <button type="submit" class="primary" id="submitBtn">Book &amp; pay ₹250</button>
-        <p class="fine">One registration per email.</p>
+        <p class="fine">One registration per email · Pay by UPI next</p>
       </form>
 
       <div class="pay" id="payView" hidden>
-        <p class="eyebrow">Step 2 of 2 · Pay the clan fee</p>
-        <h2 id="payHello">Almost there!</h2>
+        <p class="step">Step 2 of 2 · Payment</p>
+        <h2 id="payHello" class="card-title">Almost there!</h2>
         <p class="regid">Registration ID <strong class="js-regid"></strong></p>
         <div class="amount" id="payAmt">₹250</div>
         <p class="fine" id="payFor"></p>
@@ -123,13 +140,18 @@
 
       <div class="done" id="doneView" hidden>
         <div class="glyph">🪔</div>
-        <h2>You're in the clan!</h2>
+        <h2 class="card-title">Shubh Deepavali!</h2>
         <p id="doneText"></p>
         <p class="regid">Registration ID <strong class="js-regid"></strong></p>
         <p class="fine">We'll check the payment and confirm. Show this ID at the entry.</p>
         <button type="button" class="link" id="newReg2">Register another email</button>
       </div>
     </section>
+
+    <footer class="foot reveal">
+      <p class="blessing">May the light of the diyas fill your home with joy.</p>
+      <p class="credit">Photo: <a href="https://unsplash.com/photos/a-statue-of-a-hindu-god-surrounded-by-flowers-MLTEUgMj7XY?utm_source=diwali-event&amp;utm_medium=referral" target="_blank" rel="noopener">Saurabh Solanki</a> on <a href="https://unsplash.com/?utm_source=diwali-event&amp;utm_medium=referral" target="_blank" rel="noopener">Unsplash</a></p>
+    </footer>
   </main>
 
   <template id="guestTpl">
