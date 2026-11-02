@@ -3,6 +3,7 @@ import * as THREE from "three";
 const canvas = document.getElementById("scene");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const isSmall = window.innerWidth < 700;
+const isTouch = window.matchMedia("(pointer: coarse)").matches;
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isSmall, powerPreference: "high-performance" });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, isSmall ? 1.5 : 1.75));
@@ -222,13 +223,20 @@ scene.add(stars);
 
 // Interaction: smooth parallax from pointer + scroll
 const target = { x: 0, y: 0 };
-const cur = { x: 0, y: 0, s: 0 };
+const cur = { x: 0, y: 0 };
+// Mouse-only parallax: on touch screens finger drags are scrolling, not looking around.
 window.addEventListener("pointermove", (e) => {
+  if (e.pointerType !== "mouse") return;
   target.x = (e.clientX / window.innerWidth - 0.5) * 2;
   target.y = (e.clientY / window.innerHeight - 0.5) * 2;
 }, { passive: true });
 
+// Phones fire resize when the address bar shows/hides while scrolling; only
+// re-fit when the width changes (rotation / real resize) to avoid jumps.
+let lastW = window.innerWidth;
 function onResize() {
+  if (isTouch && window.innerWidth === lastW) return;
+  lastW = window.innerWidth;
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -249,16 +257,14 @@ function tick() {
   const t = clock.elapsedTime * speed;
 
   // Ease camera toward pointer + scroll offsets
-  const scrollT = Math.min(window.scrollY / Math.max(window.innerHeight, 1), 1.5);
   cur.x += (target.x - cur.x) * 0.04;
   cur.y += (target.y - cur.y) * 0.04;
-  cur.s += (scrollT - cur.s) * 0.06;
   const orbit = t * 0.05;
-  const radius = 11 - cur.s * 2.2;
+  const radius = isSmall ? 12.5 : 11;
   camera.position.x = Math.sin(orbit + cur.x * 0.25) * radius;
   camera.position.z = Math.cos(orbit + cur.x * 0.25) * radius;
-  camera.position.y = 3.2 - cur.y * 0.6 + cur.s * 1.6;
-  camera.lookAt(0, 1.4 + cur.s * 0.8, 0);
+  camera.position.y = 3.2 - cur.y * 0.6;
+  camera.lookAt(0, 1.4, 0);
 
   // Fire flicker
   const flick = Math.sin(t * 11) * 0.5 + Math.sin(t * 17.3) * 0.3 + Math.sin(t * 5.1) * 0.2;
