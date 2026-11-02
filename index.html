@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <title>Deepotsav — Diwali Registration</title>
-  <meta name="description" content="Celebrate Shri Ram's homecoming with us this Diwali. ₹250 per person." />
+  <meta name="description" content="Celebrate Shri Ram's homecoming with us this Diwali. Veg ₹250, non-veg ₹350 per person. Soft drinks free." />
   <meta name="theme-color" content="#12060a" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -29,9 +29,10 @@
       <p class="tagline">Diwali Celebration 2026</p>
       <p class="sub">Celebrate Shri Ram's homecoming with diyas, music and a festive feast.</p>
       <ul class="chips">
-        <li>₹250 / person</li>
-        <li>Veg &amp; non-veg</li>
-        <li>Ethnic dress</li>
+        <li>Veg ₹250</li>
+        <li>Non-veg ₹350</li>
+        <li>Soft drinks free</li>
+        <li>Drinks +₹150</li>
       </ul>
       <a class="primary cta" href="#formCard">Register now</a>
     </div>
@@ -69,8 +70,15 @@
             <label class="field">
               <span>Food</span>
               <select name="food" required>
-                <option value="veg">Veg</option>
-                <option value="nonveg">Non-veg</option>
+                <option value="veg">Veg · ₹250</option>
+                <option value="nonveg">Non-veg · ₹350</option>
+              </select>
+            </label>
+            <label class="field span2">
+              <span>Drinks</span>
+              <select name="drinks">
+                <option value="soft">Soft drinks · free</option>
+                <option value="alcohol">Alcoholic drinks · +₹150 (18+)</option>
               </select>
             </label>
           </div>
@@ -119,6 +127,7 @@
 
         <p class="apps-title">Pay with</p>
         <div class="apps" id="upiApps"></div>
+        <p class="hint" id="appHint" hidden>App didn't open? Open this page in Chrome or Safari (not inside WhatsApp/Instagram), or scan the QR code below, or pay to the UPI ID manually.</p>
 
         <details class="qr-box" id="qrDetails">
           <summary>Pay from another phone (QR code)</summary>
@@ -159,9 +168,13 @@
       <span class="num"></span>
       <input class="g-name" placeholder="Name" maxlength="80" required />
       <input class="g-age" type="number" min="0" max="120" inputmode="numeric" placeholder="Age" required />
-      <select class="g-food">
-        <option value="veg">Veg</option>
-        <option value="nonveg">Non-veg</option>
+      <select class="g-food" aria-label="Food">
+        <option value="veg">Veg · ₹250</option>
+        <option value="nonveg">Non-veg · ₹350</option>
+      </select>
+      <select class="g-drinks" aria-label="Drinks">
+        <option value="soft">Soft drinks · free</option>
+        <option value="alcohol">Alcohol · +₹150</option>
       </select>
     </div>
   </template>

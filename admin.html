@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <meta name="robots" content="noindex" />
-  <title>Clan Registry — Admin</title>
+  <title>Deepotsav — Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Mukta:wght@400;600;800&display=swap" rel="stylesheet" />
@@ -70,7 +70,7 @@
   <main class="wrap">
     <section id="loginView" hidden>
       <form class="tablet login" id="loginForm">
-        <h1 class="admin-title">Clan Registry</h1>
+        <h1 class="admin-title">Deepotsav Admin</h1>
         <label class="field"><span>Username</span><input name="user" autocomplete="username" required /></label>
         <label class="field"><span>Password</span><input name="password" type="password" autocomplete="current-password" required /></label>
         <p class="error" id="loginErr" role="alert" hidden></p>
@@ -80,7 +80,7 @@
 
     <section id="appView" hidden>
       <div class="top">
-        <h1>Clan Registry</h1>
+        <h1>Deepotsav Admin</h1>
         <button class="secondary" id="logout" type="button">Log out</button>
       </div>
       <div class="stats" id="stats"></div>
@@ -121,7 +121,7 @@
 
     function card(r) {
       const st = status(r);
-      const people = [{ name: r.name, age: r.age, food: r.food, main: true }, ...r.guests];
+      const people = [{ name: r.name, age: r.age, food: r.food, drinks: r.drinks, main: true }, ...r.guests];
       const action = st === "paid"
         ? `<button class="act undo" data-id="${esc(r.id)}" data-paid="0">Undo paid</button>`
         : `<button class="act ok" data-id="${esc(r.id)}" data-paid="1">Mark paid</button>`;
@@ -131,10 +131,10 @@
             <div class="meta">${esc(r.id)} · <a href="tel:${esc(r.phone)}">${esc(r.phone)}</a><br>${esc(r.email)}</div></div>
           <span class="pill ${st}">${LABEL[st]}</span>
         </div>
-        <ul class="people">${people.map((p) => `<li>${esc(p.name)} <small>· ${p.age} yrs · ${p.food === "veg" ? "Veg" : "Non-veg"}${p.main ? " · main" : ""}</small></li>`).join("")}</ul>
+        <ul class="people">${people.map((p) => `<li>${esc(p.name)} <small>· ${p.age} yrs · ${p.food === "veg" ? "Veg" : "Non-veg"}${p.drinks === "alcohol" ? " · 🍷 drinks" : ""}${p.main ? " · main" : ""}</small></li>`).join("")}</ul>
         <div class="utr">Ethnic wear: <b>${r.ethnic === "yes" ? "Yes" : "No"}</b>${r.payment?.utr ? ` · UTR <code>${esc(r.payment.utr)}</code>` : ""}</div>
         <div class="card-foot" style="margin-top:10px">
-          <span class="amt">${inr(r.total)} <small style="color:var(--muted);font-weight:400;font-size:13px">${r.count} × ₹250</small></span>
+          <span class="amt">${inr(r.total)} <small style="color:var(--muted);font-weight:400;font-size:13px">${r.count} ${r.count === 1 ? "person" : "people"}</small></span>
           ${action}
         </div>
       </article>`;
@@ -156,11 +156,13 @@
         [rows.length, "Registrations"],
         [`${paid.length} / ${rows.length}`, "Paid"],
         [inr(paid.reduce((s, r) => s + r.total, 0)), "Collected"],
-        [inr(people * 250), "Expected"],
+        [inr(rows.reduce((s, r) => s + r.total, 0)), "Expected"],
         [`${paidPeople} / ${people}`, "People paid"],
         [rows.filter((r) => status(r) === "claimed").length, "To verify"],
         [`${food.v} / ${food.n}`, "Veg / Non-veg"],
         [rows.filter((r) => r.ethnic === "yes").length, "Ethnic wear"],
+        [rows.reduce((s, r) => s + [r, ...r.guests].filter((p) => p.drinks === "alcohol").length, 0), "Alcohol (+₹150)"],
+        [rows.reduce((s, r) => s + [r, ...r.guests].filter((p) => p.drinks !== "alcohol").length, 0), "Soft drinks"],
       ].map(([v, l]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
     }
 
@@ -222,12 +224,12 @@
     $("q").addEventListener("input", draw);
     $("refresh").addEventListener("click", load);
     $("csv").addEventListener("click", () => {
-      const head = ["id", "role", "name", "age", "food", "email", "phone", "ethnic", "group_total", "payment", "utr", "created_at"];
+      const head = ["id", "role", "name", "age", "food", "drinks", "email", "phone", "ethnic", "group_total", "payment", "utr", "created_at"];
       const q = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
       const lines = [head.join(",")];
       rows.forEach((r) => {
-        lines.push([r.id, "main", r.name, r.age, r.food, r.email, r.phone, r.ethnic, r.total, status(r), r.payment?.utr, r.createdAt].map(q).join(","));
-        r.guests.forEach((g) => lines.push([r.id, "guest", g.name, g.age, g.food, "", "", "", "", "", "", ""].map(q).join(",")));
+        lines.push([r.id, "main", r.name, r.age, r.food, r.drinks || "soft", r.email, r.phone, r.ethnic, r.total, status(r), r.payment?.utr, r.createdAt].map(q).join(","));
+        r.guests.forEach((g) => lines.push([r.id, "guest", g.name, g.age, g.food, g.drinks || "soft", "", "", "", "", "", "", ""].map(q).join(",")));
       });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(new Blob([lines.join("\n")], { type: "text/csv" }));

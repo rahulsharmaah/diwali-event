@@ -1,5 +1,4 @@
-// Light background effects: rising embers on a 2D canvas, a gentle hero
-// parallax, and fade-up reveals. Kept cheap so scrolling stays smooth on phones.
+// Light background effects: rising embers on a 2D canvas and fade-up reveals. Kept cheap so scrolling stays smooth on phones.
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // --- Reveal on scroll ------------------------------------------------------
@@ -15,28 +14,12 @@ const io = "IntersectionObserver" in window
   : null;
 document.querySelectorAll(".reveal").forEach((el) => (io && !reduceMotion ? io.observe(el) : el.classList.add("in")));
 
-// --- Hero parallax (transform only, one rAF per scroll) ----------------------
-const heroImg = document.getElementById("heroImg");
-const heroCopy = document.querySelector(".hero-copy");
-let ticking = false;
-function onScroll() {
-  if (ticking) return;
-  ticking = true;
-  requestAnimationFrame(() => {
-    const y = Math.min(window.scrollY, window.innerHeight * 1.2);
-    heroImg.style.transform = `translate3d(0, ${y * 0.3}px, 0) scale(${1.04 + y * 0.00008})`;
-    heroCopy.style.opacity = String(Math.max(0, 1 - y / (window.innerHeight * 0.7)));
-    ticking = false;
-  });
-}
-if (!reduceMotion) window.addEventListener("scroll", onScroll, { passive: true });
-
 // --- Embers ----------------------------------------------------------------
 const canvas = document.getElementById("sparks");
 const ctx = canvas.getContext("2d");
 const DPR = Math.min(window.devicePixelRatio || 1, 2);
 let W = 0, H = 0, lastW = 0;
-const count = reduceMotion ? 0 : window.innerWidth < 700 ? 34 : 60;
+const count = reduceMotion ? 0 : window.innerWidth < 700 ? 22 : 45;
 const sparks = [];
 
 function size() {

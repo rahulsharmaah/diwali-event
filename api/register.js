@@ -1,8 +1,7 @@
 import { addRegistration } from "./_store.js";
+import { summarize, FOODS, DRINKS, MIN_DRINKING_AGE } from "../pricing.js";
 
-const PRICE = 250;
 const MAX = 15;
-const FOODS = ["veg", "nonveg"];
 
 const clean = (s, n = 80) => String(s ?? "").trim().replace(/\s+/g, " ").slice(0, n);
 const validAge = (a, min) => Number.isInteger(a) && a >= min && a <= 120;
@@ -26,6 +25,7 @@ export default async function handler(req, res) {
   const phone = String(b.phone ?? "").replace(/[\s-]/g, "");
   const age = Number(b.age);
   const food = FOODS.includes(b.food) ? b.food : null;
+  const drinks = DRINKS.includes(b.drinks) ? b.drinks : "soft";
   const ethnic = b.ethnic === "yes" ? "yes" : b.ethnic === "no" ? "no" : null;
   const rawGuests = Array.isArray(b.guests) ? b.guests : [];
 
@@ -34,6 +34,7 @@ export default async function handler(req, res) {
   if (!/^(\+?91)?[6-9]\d{9}$/.test(phone)) return res.status(400).json({ error: "Please enter a valid 10-digit mobile number." });
   if (!validAge(age, 1)) return res.status(400).json({ error: "Please enter a valid age." });
   if (!food || !ethnic) return res.status(400).json({ error: "Please choose food and ethnic wear." });
+  if (drinks === "alcohol" && age < MIN_DRINKING_AGE) return res.status(400).json({ error: `Alcoholic drinks are only for guests aged ${MIN_DRINKING_AGE}+.` });
   if (rawGuests.length > MAX - 1) return res.status(400).json({ error: `Maximum ${MAX} people per registration.` });
 
   const guests = [];
@@ -43,16 +44,20 @@ export default async function handler(req, res) {
     if (!gName || !validAge(gAge, 0) || !FOODS.includes(g?.food)) {
       return res.status(400).json({ error: "Please complete name and age for every person." });
     }
-    guests.push({ name: gName, age: gAge, food: g.food });
+    const gDrinks = DRINKS.includes(g?.drinks) ? g.drinks : "soft";
+    if (gDrinks === "alcohol" && gAge < MIN_DRINKING_AGE) {
+      return res.status(400).json({ error: `Alcoholic drinks are only for guests aged ${MIN_DRINKING_AGE}+.` });
+    }
+    guests.push({ name: gName, age: gAge, food: g.food, drinks: gDrinks });
   }
 
   const count = guests.length + 1;
   const rec = {
     id: makeId(),
-    name, email, phone, age, food, ethnic,
+    name, email, phone, age, food, drinks, ethnic,
     guests,
     count,
-    total: count * PRICE,
+    total: summarize([{ food, drinks }, ...guests]).total,
     payment: { status: "unpaid" },
     createdAt: new Date().toISOString(),
   };
