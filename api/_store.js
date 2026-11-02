@@ -93,6 +93,11 @@ export async function saveRegistration(rec) {
   await writeLocal(all);
 }
 
+// One round trip to the database, for latency checks.
+export async function ping() {
+  if (usingRedis) return redis("PING");
+}
+
 export async function listRegistrations() {
   if (usingRedis) {
     const emails = await redis("SMEMBERS", "reg:emails");
