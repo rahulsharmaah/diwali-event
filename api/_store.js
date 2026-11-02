@@ -1,13 +1,35 @@
-// Tiny storage layer. On Vercel it uses Upstash Redis (connect it from the
-// Vercel Storage tab; it sets KV_REST_API_URL / KV_REST_API_TOKEN). Without
-// those env vars it falls back to a local JSON file for development.
+// Tiny storage layer. Works with whichever Redis Vercel connected:
+//  - Upstash (REST): *_KV_REST_API_URL + *_KV_REST_API_TOKEN, or UPSTASH_REDIS_REST_URL/TOKEN
+//    (any prefix chosen in the Vercel Storage tab is fine)
+//  - Redis (TCP): REDIS_URL (or any *_REDIS_URL)
+// With none of these it falls back to a local JSON file for development.
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+const env = process.env;
+const findEnv = (re) => Object.keys(env).find((k) => re.test(k) && env[k]);
+
+const restUrlKey = findEnv(/(^|_)KV_REST_API_URL$/) || findEnv(/(^|_)REDIS_REST_URL$/);
+const restTokenKey = restUrlKey && (findEnv(new RegExp("^" + restUrlKey.replace(/URL$/, "TOKEN") + "$")) || findEnv(/(^|_)KV_REST_API_TOKEN$/) || findEnv(/(^|_)REDIS_REST_TOKEN$/));
+const URL_ = restUrlKey && env[restUrlKey];
+const TOKEN = restTokenKey && env[restTokenKey];
+const tcpKey = !URL_ ? findEnv(/(^|_)(REDIS_URL|KV_URL)$/) : null;
+
+export const storageInfo = { mode: URL_ && TOKEN ? "upstash-rest" : tcpKey ? "redis-tcp" : "local-file", vars: [restUrlKey, restTokenKey, tcpKey].filter(Boolean) };
+
+let tcpClient;
+async function tcp() {
+  if (!tcpClient) {
+    const { createClient } = await import("redis");
+    tcpClient = createClient({ url: env[tcpKey] });
+    tcpClient.on("error", (e) => console.error("redis", e.message));
+    await tcpClient.connect();
+  }
+  return tcpClient;
+}
 
 async function redis(...cmd) {
+  if (tcpKey) return (await tcp()).sendCommand(cmd.map(String));
   const res = await fetch(URL_, {
     method: "POST",
     headers: { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json" },
@@ -27,10 +49,10 @@ async function writeLocal(all) {
   await fs.writeFile(LOCAL_FILE, JSON.stringify(all, null, 2));
 }
 
-export const usingRedis = Boolean(URL_ && TOKEN);
+export const usingRedis = storageInfo.mode !== "local-file";
 
 if (!usingRedis && process.env.VERCEL) {
-  console.error("No Redis configured: connect Upstash Redis in Vercel Storage.");
+  console.error("No Redis configured: connect a Redis database in Vercel Storage.");
 }
 
 // Returns true if saved, false if this email already exists.

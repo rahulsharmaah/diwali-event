@@ -84,11 +84,27 @@ function validate(d) {
 
 // --- Payment step ---------------------------------------------------------
 
-const upiLink = (reg) =>
-  "upi://pay?" +
+const upiQuery = (reg) =>
   new URLSearchParams({ pa: UPI_ID, pn: UPI_NAME, am: reg.total.toFixed(2), cu: "INR", tn: `Diwali ${reg.id}` }).toString();
+const upiLink = (reg) => "upi://pay?" + upiQuery(reg);
 
-const isPhone = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const isAndroid = /Android/i.test(navigator.userAgent);
+const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const isPhone = () => isAndroid || isIOS;
+
+// One button per app. Android opens the exact app via an intent (Play Store if
+// missing); iOS uses each app’s own URL scheme since iOS has no UPI chooser.
+const UPI_APPS = [
+  { name: "Google Pay", pkg: "com.google.android.apps.nbu.paisa.user", ios: "gpay://upi/pay?", color: "#4285f4" },
+  { name: "PhonePe", pkg: "com.phonepe.app", ios: "phonepe://pay?", color: "#5f259f" },
+  { name: "Paytm", pkg: "net.one97.paytm", ios: "paytmmp://pay?", color: "#00baf2" },
+];
+function appLink(app, reg) {
+  const q = upiQuery(reg);
+  if (isAndroid) return `intent://pay?${q}#Intent;scheme=upi;package=${app.pkg};end`;
+  if (isIOS) return app.ios + q;
+  return upiLink(reg);
+}
 
 function remember(reg) {
   try { localStorage.setItem(SAVED, JSON.stringify(reg)); } catch {}
@@ -111,8 +127,11 @@ function showPay(reg) {
   $("payAmt").textContent = inr(reg.total);
   $("payFor").textContent = `${reg.count} ${reg.count === 1 ? "person" : "people"} × ${inr(PRICE)}`;
   $("upiId").textContent = UPI_ID;
-  $("upiBtn").href = link;
-  $("upiBtn").textContent = `Pay ${inr(reg.total)} with UPI app`;
+  $("upiApps").innerHTML =
+    UPI_APPS.map((a) => `<a class="app" style="--app:${a.color}" href="${appLink(a, reg)}"><span class="dot"></span>${a.name}</a>`).join("") +
+    `<a class="app other" href="${link}"><span class="dot"></span>${isAndroid ? "Any UPI app" : "Other UPI app"}</a>`;
+  // Phones pay from the app buttons; other screens get the QR straight away.
+  $("qrDetails").open = !isPhone();
 
   const box = $("qr");
   box.innerHTML = "";
@@ -171,8 +190,9 @@ form.addEventListener("submit", async (e) => {
     const reg = { ...out, status: "unpaid" };
     remember(reg);
     showPay(reg);
-    // On phones, jump straight into the UPI app chooser.
-    if (isPhone()) window.location.href = upiLink(reg);
+    // Android: jump straight into the system chooser listing every UPI app.
+    // iOS has no chooser, so the app buttons on the pay screen do the job.
+    if (isAndroid) window.location.href = upiLink(reg);
   } catch (err) {
     showError(errEl, err.message);
   } finally {

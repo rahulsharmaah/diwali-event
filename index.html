@@ -100,12 +100,14 @@
         <div class="amount" id="payAmt">₹250</div>
         <p class="fine" id="payFor"></p>
 
-        <a class="primary btn-link" id="upiBtn" href="#">Pay with UPI app</a>
+        <p class="apps-title">Pay with</p>
+        <div class="apps" id="upiApps"></div>
 
-        <div class="qr-box">
+        <details class="qr-box" id="qrDetails">
+          <summary>Pay from another phone (QR code)</summary>
           <div id="qr" aria-label="UPI payment QR code"></div>
-          <p>Or scan with GPay, PhonePe, Paytm or any UPI app</p>
-        </div>
+          <p>Scan with GPay, PhonePe, Paytm or any UPI app</p>
+        </details>
         <p class="upi-id">UPI ID <code id="upiId"></code> <button type="button" id="copyUpi">Copy</button></p>
 
         <form id="claimForm" novalidate>
