@@ -20,7 +20,7 @@ html, body { margin: 0; min-height: 100%; }
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: "Nunito", system-ui, sans-serif;
+  font-family: "Mukta", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -47,7 +47,7 @@ body {
   z-index: 2;
   max-width: 640px;
   margin: 0 auto;
-  padding: 7vh 16px 64px;
+  padding: 5vh 16px calc(48px + env(safe-area-inset-bottom));
 }
 
 .hero { text-align: center; margin-bottom: 28px; }
@@ -62,7 +62,7 @@ body {
 }
 
 h1 {
-  font-family: "Rubik Dirt", "Nunito", sans-serif;
+  font-family: "Yatra One", "Mukta", sans-serif;
   font-weight: 400;
   font-size: clamp(44px, 11vw, 84px);
   line-height: 0.95;
@@ -86,7 +86,7 @@ h1 span {
 /* Stone tablet */
 .tablet {
   position: relative;
-  padding: 26px 22px;
+  padding: 20px 16px;
   border-radius: var(--radius);
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
@@ -103,7 +103,7 @@ h1 span {
 fieldset { border: 0; margin: 0 0 22px; padding: 0; min-width: 0; }
 
 legend {
-  font-family: "Rubik Dirt", sans-serif;
+  font-family: "Yatra One", sans-serif;
   font-size: 22px;
   color: #ffcf8a;
   padding: 0;
@@ -111,8 +111,7 @@ legend {
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
 }
 
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.span2 { grid-column: span 2; }
+.grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
 
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .field > span, .label { font-size: 13px; font-weight: 600; color: var(--muted); }
@@ -157,7 +156,7 @@ input:focus, select:focus {
 }
 
 .stepper button {
-  width: 38px; height: 38px;
+  width: 44px; height: 44px;
   border-radius: 50%;
   border: 0;
   font-size: 22px;
@@ -176,7 +175,7 @@ input:focus, select:focus {
 
 .guest {
   display: grid;
-  grid-template-columns: 26px 1fr 76px 104px;
+  grid-template-columns: 22px 1fr 72px;
   gap: 8px;
   align-items: center;
   animation: rise 0.35s ease both;
@@ -219,7 +218,7 @@ input:focus, select:focus {
 }
 .total small { display: block; color: var(--muted); margin-top: 2px; }
 .total strong {
-  font-family: "Rubik Dirt", sans-serif;
+  font-family: "Yatra One", sans-serif;
   font-weight: 400;
   font-size: 38px;
   color: var(--fire-hi);
@@ -261,7 +260,7 @@ input:focus, select:focus {
 
 .done { text-align: center; padding: 18px 6px; animation: rise 0.5s ease both; }
 .done .glyph { font-size: 56px; filter: drop-shadow(0 0 20px rgba(255, 140, 40, 0.8)); }
-.done h2 { font-family: "Rubik Dirt", sans-serif; font-weight: 400; font-size: 34px; margin: 8px 0; color: #ffd9a0; }
+.done h2 { font-family: "Yatra One", sans-serif; font-weight: 400; font-size: 34px; margin: 8px 0; color: #ffd9a0; }
 .done p { color: var(--muted); line-height: 1.6; }
 .regid strong {
   display: inline-block;
@@ -274,15 +273,59 @@ input:focus, select:focus {
   letter-spacing: 0.08em;
 }
 
-@media (max-width: 520px) {
-  .wrap { padding-top: 5vh; }
-  .tablet { padding: 20px 16px; }
-  .grid { grid-template-columns: 1fr; }
-  .span2 { grid-column: auto; }
-  .guest { grid-template-columns: 22px 1fr 64px; }
-  .guest .g-food { grid-column: 2 / span 2; }
+.guest .g-food { grid-column: 2 / span 2; }
+
+/* Larger screens: enhance the phone layout */
+@media (min-width: 560px) {
+  .wrap { padding-top: 7vh; }
+  .tablet { padding: 26px 22px; }
+  .grid { grid-template-columns: 1fr 1fr; }
+  .span2 { grid-column: span 2; }
+  .guest { grid-template-columns: 26px 1fr 76px 104px; }
+  .guest .g-food { grid-column: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* Payment step */
+.pay { text-align: center; animation: rise 0.5s ease both; }
+.pay h2 { font-family: "Yatra One", sans-serif; font-weight: 400; font-size: 32px; margin: 4px 0 6px; color: #ffd9a0; }
+.pay .amount {
+  font-family: "Yatra One", sans-serif;
+  font-size: 56px;
+  line-height: 1.1;
+  margin-top: 10px;
+  color: var(--fire-hi);
+  text-shadow: 0 0 22px rgba(255, 160, 60, 0.5);
+}
+.pay .fine { margin: 0 0 18px; }
+.btn-link { display: block; text-decoration: none; text-align: center; }
+
+.qr-box { margin: 22px auto 10px; }
+.qr-box p { color: var(--muted); font-size: 14px; margin: 10px 0 0; }
+#qr {
+  display: inline-block;
+  padding: 12px;
+  border-radius: 14px;
+  background: #fff8ec;
+  box-shadow: 0 0 0 4px rgba(255, 138, 42, 0.35), 0 10px 30px rgba(0, 0, 0, 0.4);
+  line-height: 0;
+}
+#qr img, #qr svg { width: 200px; height: 200px; image-rendering: pixelated; }
+
+.upi-id { color: var(--muted); font-size: 14px; margin: 8px 0 24px; }
+.upi-id code { color: var(--ink); font-size: 15px; background: rgba(16, 9, 5, 0.6); padding: 3px 8px; border-radius: 6px; }
+.upi-id button, .link {
+  font: inherit;
+  font-size: 14px;
+  color: var(--fire-hi);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+#claimForm { text-align: left; display: flex; flex-direction: column; gap: 14px; padding-top: 20px; border-top: 1px solid rgba(0, 0, 0, 0.4); }
+.link { margin-top: 16px; opacity: 0.85; }

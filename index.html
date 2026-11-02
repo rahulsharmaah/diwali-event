@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#140b07" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Rubik+Dirt&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Mukta:wght@400;600;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/style.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪔</text></svg>" />
   <script type="importmap">
@@ -89,16 +89,43 @@
         </div>
 
         <p class="error" id="formError" role="alert" hidden></p>
-        <button type="submit" class="primary" id="submitBtn">Carve my name in stone</button>
+        <button type="submit" class="primary" id="submitBtn">Book &amp; pay ₹250</button>
         <p class="fine">One registration per email.</p>
       </form>
 
+      <div class="pay" id="payView" hidden>
+        <p class="eyebrow">Step 2 of 2 · Pay the clan fee</p>
+        <h2 id="payHello">Almost there!</h2>
+        <p class="regid">Registration ID <strong class="js-regid"></strong></p>
+        <div class="amount" id="payAmt">₹250</div>
+        <p class="fine" id="payFor"></p>
+
+        <a class="primary btn-link" id="upiBtn" href="#">Pay with UPI app</a>
+
+        <div class="qr-box">
+          <div id="qr" aria-label="UPI payment QR code"></div>
+          <p>Or scan with GPay, PhonePe, Paytm or any UPI app</p>
+        </div>
+        <p class="upi-id">UPI ID <code id="upiId"></code> <button type="button" id="copyUpi">Copy</button></p>
+
+        <form id="claimForm" novalidate>
+          <label class="field">
+            <span>After paying, enter the UPI transaction ID (UTR / reference no.)</span>
+            <input name="utr" inputmode="numeric" maxlength="35" autocomplete="off" placeholder="e.g. 431245678901" />
+          </label>
+          <p class="error" id="payError" role="alert" hidden></p>
+          <button type="submit" class="primary" id="claimBtn">I've paid</button>
+        </form>
+        <button type="button" class="link" id="newReg">Register another email</button>
+      </div>
+
       <div class="done" id="doneView" hidden>
-        <div class="glyph">🔥</div>
+        <div class="glyph">🪔</div>
         <h2>You're in the clan!</h2>
         <p id="doneText"></p>
-        <p class="regid">Registration ID <strong id="regId"></strong></p>
-        <p class="fine">Keep this ID — show it at the entry.</p>
+        <p class="regid">Registration ID <strong class="js-regid"></strong></p>
+        <p class="fine">We'll check the payment and confirm. Show this ID at the entry.</p>
+        <button type="button" class="link" id="newReg2">Register another email</button>
       </div>
     </section>
   </main>
@@ -115,6 +142,7 @@
     </div>
   </template>
 
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
   <script type="module" src="/scene.js"></script>
   <script type="module" src="/app.js"></script>
 </body>

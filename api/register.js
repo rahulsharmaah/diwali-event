@@ -53,6 +53,7 @@ export default async function handler(req, res) {
     guests,
     count,
     total: count * PRICE,
+    payment: { status: "unpaid" },
     createdAt: new Date().toISOString(),
   };
 
@@ -64,5 +65,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Could not save right now. Please try again." });
   }
 
-  return res.status(201).json({ id: rec.id, name, count, total: rec.total });
+  return res.status(201).json({ id: rec.id, name, email, count, total: rec.total });
 }
