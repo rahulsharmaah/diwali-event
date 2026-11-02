@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Diwali of the Ancients — Register</title>
+  <meta name="description" content="Register for our Diwali celebration. ₹250 per person." />
+  <meta name="theme-color" content="#140b07" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Dirt&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪔</text></svg>" />
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="scene" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <main class="wrap">
+    <header class="hero">
+      <p class="eyebrow">The tribe gathers around the fire</p>
+      <h1>Diwali <span>of the</span> Ancients</h1>
+      <p class="sub">Light a diya, dress in your finest, feast with the clan.<br />Entry <strong>₹250</strong> per person.</p>
+    </header>
+
+    <section class="tablet" id="formCard">
+      <form id="regForm" novalidate>
+        <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+        <fieldset>
+          <legend>Chief of the clan</legend>
+          <div class="grid">
+            <label class="field span2">
+              <span>Full name</span>
+              <input name="name" required maxlength="80" autocomplete="name" placeholder="Your name" />
+            </label>
+            <label class="field">
+              <span>Email</span>
+              <input name="email" type="email" required maxlength="120" autocomplete="email" placeholder="you@example.com" />
+            </label>
+            <label class="field">
+              <span>Phone</span>
+              <input name="phone" type="tel" required inputmode="numeric" maxlength="14" autocomplete="tel" placeholder="10-digit mobile" />
+            </label>
+            <label class="field">
+              <span>Age</span>
+              <input name="age" type="number" required min="1" max="120" inputmode="numeric" placeholder="Age" />
+            </label>
+            <label class="field">
+              <span>Food</span>
+              <select name="food" required>
+                <option value="veg">Veg</option>
+                <option value="nonveg">Non-veg</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>The clan</legend>
+          <div class="row-between">
+            <span class="label">How many people in total?</span>
+            <div class="stepper" role="group" aria-label="Number of people">
+              <button type="button" data-step="-1" aria-label="Fewer">−</button>
+              <output id="countOut">1</output>
+              <button type="button" data-step="1" aria-label="More">+</button>
+            </div>
+          </div>
+          <div id="guests" class="guests"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Ethnic wear</legend>
+          <div class="choice">
+            <label><input type="radio" name="ethnic" value="yes" checked /><span>Yes, dressed up</span></label>
+            <label><input type="radio" name="ethnic" value="no" /><span>Not this time</span></label>
+          </div>
+        </fieldset>
+
+        <div class="total">
+          <div>
+            <span class="label">Entry total</span>
+            <small id="totalCalc">1 × ₹250</small>
+          </div>
+          <strong id="totalAmt">₹250</strong>
+        </div>
+
+        <p class="error" id="formError" role="alert" hidden></p>
+        <button type="submit" class="primary" id="submitBtn">Carve my name in stone</button>
+        <p class="fine">One registration per email.</p>
+      </form>
+
+      <div class="done" id="doneView" hidden>
+        <div class="glyph">🔥</div>
+        <h2>You're in the clan!</h2>
+        <p id="doneText"></p>
+        <p class="regid">Registration ID <strong id="regId"></strong></p>
+        <p class="fine">Keep this ID — show it at the entry.</p>
+      </div>
+    </section>
+  </main>
+
+  <template id="guestTpl">
+    <div class="guest">
+      <span class="num"></span>
+      <input class="g-name" placeholder="Name" maxlength="80" required />
+      <input class="g-age" type="number" min="0" max="120" inputmode="numeric" placeholder="Age" required />
+      <select class="g-food">
+        <option value="veg">Veg</option>
+        <option value="nonveg">Non-veg</option>
+      </select>
+    </div>
+  </template>
+
+  <script type="module" src="/scene.js"></script>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
